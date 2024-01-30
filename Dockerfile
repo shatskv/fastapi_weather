@@ -6,11 +6,12 @@ RUN apk update && apk upgrade \
     && apk add --no-cache gcc musl-dev libffi-dev openssl-dev \
     && pip install --upgrade pip
 
-COPY requirements.txt /app
+COPY /weather /app/weather
 
-RUN pip install -r requirements.txt
+COPY poetry.lock pyproject.toml /app/
 
-COPY weather_api.py /app
+RUN pip install poetry \
+    && poetry config virtualenvs.create false \
+    && poetry install --without dev 
 
-CMD ["python", "weather_api.py"]
-
+CMD ["uvicorn", "weather.server:app", "--host", "0.0.0.0", "--port", "8000"]
